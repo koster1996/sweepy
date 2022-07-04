@@ -35,25 +35,13 @@ class Sweeper:
             len(self.openSquares) + len(self.mines) < self.height * self.width
             and not self.hitMine
         ):
-            # print(self.openSquares)
             print(self.count)
             # If we did not open any new squares last step, we are going to open one at random
             if len(self.openSquares) + len(self.mines) == self.count:
-
+                print("rolling randomly")
                 newSquare = self.getNewRandomLocation()
                 self.openSquares[newSquare] = self.doSweep(newSquare[0], newSquare[1])
             self.count = len(self.openSquares) + len(self.mines)
-
-            # First, see if we have any openSquares which do not have any mines next to it and unknown squares we can make known
-            # Currently, this is a hack, as dict.items does not allow resizing during looping through it
-            for openSquare in {k: v for k, v in self.openSquares.items()}.items():
-                if openSquare[1] == 0:
-                    for newOpenSquare in self.obtainUnknownNeighourSquares(
-                        openSquare[0][0], openSquare[0][1]
-                    ):
-                        self.openSquares[newOpenSquare] = self.doSweep(
-                            newOpenSquare[0], newOpenSquare[1]
-                        )
 
             # second, find locations that are definitely bombs
             self.findDefinitelyMines()
@@ -63,7 +51,7 @@ class Sweeper:
 
         return self.mines
 
-    # we cycle through the currently open Squares and see if the number of unknown squares + the number of neighbouring mines match each value for each open square. Set all the unknown values to bombs
+    # we cycle through the currently open Squares and see if the number of unknown squares + the number of neighbouring mines match the value for each open square. Set all the unknown values to bombs
     def findDefinitelyMines(self) -> None:
         for openSquare in {k: v for k, v in self.openSquares.items()}.items():
             # print(
@@ -85,7 +73,7 @@ class Sweeper:
     def findSafeSquares(self) -> None:
         # fix me
         for openSquare in {k: v for k, v in self.openSquares.items()}.items():
-            if openSquare[1] > 0 and openSquare[1] == len(
+            if openSquare[1] == len(
                 self.obtainKnownNeighourMines(openSquare[0][0], openSquare[0][1])
             ):
                 for newOpenSquare in self.obtainUnknownNeighourSquares(
@@ -141,7 +129,8 @@ class Sweeper:
                         mineSquares.append(mineSquare)
         return mineSquares
 
-    # returns a new random square that is not in self.openSquares or self.bombs
+    # returns a new random square that is not in self.openSquares or self.bombs,
+    # or directly near open values, if possible, as we only call this function if we are stuck
     def getNewRandomLocation(self) -> tuple:
         valid = False
         while not valid:
@@ -156,7 +145,7 @@ class Sweeper:
 
 
 def main() -> None:
-    difficulty = BEGINNER_FIELD
+    difficulty = INTERMEDIATE_FIELD
 
     MineFieldInstance = MineField(
         width=difficulty["width"],
@@ -169,7 +158,7 @@ def main() -> None:
     mines = sweeper.solve()
     print("Mine locations:")
     for i, mine in enumerate(mines):
-        print("Mine {} location: {}".format(i + 1, mine))  # hahahahaha one indexing
+        print("Mine {} location: {}".format(i, mine))  # hahahahaha zero indexing
 
 
 if __name__ == "__main__":
